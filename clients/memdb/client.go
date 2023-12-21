@@ -69,6 +69,51 @@ func TableSchema() *memdb.DBSchema {
 					Unique:  false,
 					Indexer: &memdb.StringFieldIndex{Field: "MaterialTicker"},
 				},
+				"exchange_ticker": {
+					Name:    "exchange_ticker",
+					Unique:  false,
+					Indexer: &memdb.StringFieldIndex{Field: "ExchangeTicker"},
+				},
+			},
+		},
+		"ticker": {
+			Name: "ticker",
+			Indexes: map[string]*memdb.IndexSchema{
+				"id": {
+					Name:    "id",
+					Unique:  true,
+					Indexer: &memdb.StringFieldIndex{Field: "ID"},
+				},
+				"ticker": {
+					Name:    "ticker",
+					Unique:  false,
+					Indexer: &memdb.StringFieldIndex{Field: "Ticker"},
+				},
+			},
+		},
+		"material": {
+			Name: "material",
+			Indexes: map[string]*memdb.IndexSchema{
+				"id": {
+					Name:    "id",
+					Unique:  true,
+					Indexer: &memdb.StringFieldIndex{Field: "ID"},
+				},
+				"ticker": {
+					Name:    "ticker",
+					Unique:  true,
+					Indexer: &memdb.StringFieldIndex{Field: "Ticker"},
+				},
+				"name": {
+					Name:    "name",
+					Unique:  true,
+					Indexer: &memdb.StringFieldIndex{Field: "Name"},
+				},
+				"category_name": {
+					Name:    "category_name",
+					Unique:  false,
+					Indexer: &memdb.StringFieldIndex{Field: "CategoryName"},
+				},
 			},
 		},
 	}

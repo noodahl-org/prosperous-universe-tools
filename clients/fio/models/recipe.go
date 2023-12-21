@@ -5,7 +5,7 @@ import (
 	"encoding/json"
 )
 
-//go:embed recipes.json
+//go:embed static/recipes.json
 var recipeBytes []byte
 
 type Recipe struct {

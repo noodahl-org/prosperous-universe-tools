@@ -17,7 +17,9 @@ type ExchangeSummary struct {
 }
 
 type TickerSummary struct {
+	ID             string        `json:"id"`
 	ExchangeTicker string        `json:"exchange_ticker"`
+	MaterialName   string        `json:"material_name"`
 	Ticker         string        `json:"ticker"`
 	Recipe         models.Recipe `json:"-"`
 	Ask            Summary       `json:"ask_summary"`
@@ -35,15 +37,15 @@ type Summary struct {
 	Volume  int     `json:"volume"`
 }
 
-func MarketSummary(db *memdb.MemDB, out *[]TickerSummary) func() error {
+func MarketSummary(db *memdb.MemDB) func() error {
 	return func() error {
 		data := []models.MarketData{}
-		utils.Handle(tx.Select("market", "id", db, &data))
+		utils.Handle(tx.Select("market", "id", nil, db, &data))
 
 		summaries := []TickerSummary{}
 		materials := lo.GroupBy(data, func(i models.MarketData) string {
 			//return i.MaterialTicker
-			return fmt.Sprintf("%s_%s", i.MaterialTicker, i.ExchangeCode)
+			return fmt.Sprintf("%s.%s", i.ExchangeCode, i.MaterialTicker)
 		})
 
 		for ticker, orders := range materials {
@@ -53,6 +55,7 @@ func MarketSummary(db *memdb.MemDB, out *[]TickerSummary) func() error {
 
 		//after we've parsed the initial summary data
 		//we can go in and evaluate averages, recipe costs, ect
+		insert := []TickerSummary{}
 		for _, s := range summaries {
 			s.Cost = lo.SumBy(s.Recipe.Inputs, func(input models.InputOutput) float64 {
 				if is, _, ok := lo.FindIndexOf(summaries, func(item TickerSummary) bool {
@@ -68,16 +71,17 @@ func MarketSummary(db *memdb.MemDB, out *[]TickerSummary) func() error {
 				s.Cost /= float64(s.Recipe.Outputs[0].Amount)
 			}
 			s.Spread = math.Round(s.Bid.Highest - s.Ask.Lowest)
-			*out = append(*out, s)
+			insert = append(insert, s)
 		}
-		return nil
+		return tx.Insert("ticker", db, insert...)()
 	}
 }
 
 func ParseTickerSummary(ticker string, orders []models.MarketData) TickerSummary {
 	result := TickerSummary{
+		ID:             ticker,
 		ExchangeTicker: ticker,
-		Ticker:         strings.Split(ticker, "_")[0],
+		Ticker:         strings.Split(ticker, ".")[1],
 		Ask:            Summary{},
 		Bid:            Summary{},
 	}

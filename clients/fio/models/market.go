@@ -13,6 +13,7 @@ type MarketData struct {
 	ID             string    `json:"id"`
 	MaterialTicker string    `json:"material_ticker"`
 	ExchangeCode   string    `json:"exchange_code"`
+	ExchangeTicker string    `json:"exchange_ticker"`
 	CompanyID      string    `json:"company_id"`
 	CompanyName    string    `json:"company_name"`
 	CompanyCode    string    `json:"company_code"`
@@ -48,6 +49,7 @@ func MarketFromCSV(row, t string) MarketData {
 		ID:             hash,
 		MaterialTicker: split[0],
 		ExchangeCode:   split[1],
+		ExchangeTicker: fmt.Sprintf("%s.%s", split[1], split[0]),
 		CompanyID:      split[2],
 		CompanyName:    strings.Replace(split[3], "\\", "", -1),
 		CompanyCode:    split[4],
